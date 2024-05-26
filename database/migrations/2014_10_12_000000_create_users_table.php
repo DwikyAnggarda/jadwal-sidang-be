@@ -27,7 +27,7 @@ return new class extends Migration
                 ->onDelete('restrict');
 
             $table->unsignedBigInteger('leader_id')->nullable();
-            $table->string('name');
+            $table->string('fullname');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

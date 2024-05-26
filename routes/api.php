@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\JenisDocumentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,7 +41,7 @@ Route::middleware('auth:api')->controller(UserController::class)->group(function
     Route::get('/user/subordinate', 'get_subordinate')->name('api.user.subordinate');
 });
 
-Route::middleware('auth:api')->controller(CategoryController::class)->group(function () {
+/* Route::middleware('auth:api')->controller(CategoryController::class)->group(function () {
     Route::get('/categories', 'index')->name('api.category.list');
     Route::get('/categories/total', 'total_category')->name('api.category.total');
     Route::get('/categories/{category}', 'detail')->name('api.category.detail');
@@ -64,8 +65,33 @@ Route::middleware('auth:api')->controller(TaskController::class)->group(function
     Route::post('/tasks', 'create')->name('api.task.create');
     Route::put('/tasks/{model}', 'update')->name('api.task.update');
     Route::delete('/tasks/{model}', 'destroy')->name('api.task.delete');
-});
+}); */
 
 // create total user api per team
-Route::middleware('auth:api')->controller(UserController::class)->group(function () {
+// Route::middleware('auth:api')->controller(UserController::class)->group(function () {});
+
+/* Route::middleware('auth:api')->get('/test', function () {
+    $user = auth()->user();
+
+    if ($user->is_leader > 0) {
+        return response()->json([
+            'msg' => 'You are a leader',
+        ], 200);
+    } else {
+        return response()->json([
+            'msg' => 'You are not a leader',
+        ], 200);
+    }
+}); */
+
+Route::middleware('auth:api')->group(function () {
+    $user = auth()->user();
+
+    if ($user->is_leader > 0) {
+        Route::apiResource('jenis_documents', JenisDocumentController::class);
+    } else {
+        return response()->json([
+            'msg' => 'You are not a leader',
+        ], 200);
+    }
 });

@@ -29,7 +29,7 @@ class EditUserFormRequest extends FormRequest
         $id = (int) $this->segment(3);
 
         return [
-            'name' => 'nullable|string|max:255',
+            'fullname' => 'nullable|string|max:255',
             'phone' => 'required|numeric|max_digits:16|min_digits:10|unique:users,phone,'.$id,
             'email' => 'nullable|string|max:255',
             'password' => 'nullable|string|min:6',
