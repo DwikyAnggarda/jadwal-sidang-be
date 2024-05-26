@@ -8,6 +8,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\JenisDocumentController;
+use App\Http\Controllers\DocumentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,20 +26,52 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('api.auth.login');
 });
 
-Route::middleware('auth:api')->controller(AuthController::class)->group(function () {
-    Route::get('/profile', 'profile')->name('api.auth.profile');
-    Route::post('/logout', 'logout')->name('api.auth.logout');
-    Route::get('/refresh', 'refresh')->name('api.auth.refresh');
-});
+Route::middleware('auth:api')->group(function () {
+    $user = auth()->user();
 
-Route::middleware('auth:api')->controller(UserController::class)->group(function () {
-    Route::get('/users', 'index')->name('api.user.list');
-    Route::get('/users/total', 'total_user')->name('api.user.total');
-    Route::get('/users/{model}', 'detail')->name('api.user.detail');
-    Route::post('/users', 'create')->name('api.user.create');
-    Route::put('/users/{model}', 'update')->name('api.user.update');
-    Route::delete('/users/{model}', 'destroy')->name('api.user.delete');
-    Route::get('/user/subordinate', 'get_subordinate')->name('api.user.subordinate');
+    if (isset($user)) {
+        if ($user->is_leader > 0) {
+            Route::apiResource('jenis_documents', JenisDocumentController::class);
+            Route::apiResource('documents', DocumentController::class);
+            Route::controller(AuthController::class)->group(function () {
+                Route::get('/profile', 'profile')->name('api.auth.profile');
+                Route::post('/logout', 'logout')->name('api.auth.logout');
+                Route::get('/refresh', 'refresh')->name('api.auth.refresh');
+            });
+
+            Route::controller(UserController::class)->group(function () {
+                Route::get('/users', 'index')->name('api.user.list');
+                Route::get('/users/total', 'total_user')->name('api.user.total');
+                Route::get('/users/{model}', 'detail')->name('api.user.detail');
+                Route::post('/users', 'create')->name('api.user.create');
+                Route::put('/users/{model}', 'update')->name('api.user.update');
+                Route::delete('/users/{model}', 'destroy')->name('api.user.delete');
+                Route::get('/user/subordinate', 'get_subordinate')->name('api.user.subordinate');
+            });
+        } else {
+            return response()->json([
+                'msg' => 'Access Forbidden!',
+            ], 500);
+        }
+
+        if ($user->is_leader < 1) {
+            // Route::apiResource('documents', DocumentController::class);
+            Route::controller(AuthController::class)->group(function () {
+                Route::get('/profile', 'profile')->name('api.auth.profile');
+                Route::post('/logout', 'logout')->name('api.auth.logout');
+                Route::get('/refresh', 'refresh')->name('api.auth.refresh');
+            });
+        } else {
+            return response()->json([
+                'msg' => 'Access Forbidden!',
+            ], 500);
+        }
+    } else {
+        return response()->json([
+            'msg' => 'You are not sign in',
+        ], 500);
+    }
+
 });
 
 /* Route::middleware('auth:api')->controller(CategoryController::class)->group(function () {
@@ -83,15 +116,3 @@ Route::middleware('auth:api')->controller(TaskController::class)->group(function
         ], 200);
     }
 }); */
-
-Route::middleware('auth:api')->group(function () {
-    $user = auth()->user();
-
-    if ($user->is_leader > 0) {
-        Route::apiResource('jenis_documents', JenisDocumentController::class);
-    } else {
-        return response()->json([
-            'msg' => 'You are not a leader',
-        ], 200);
-    }
-});
